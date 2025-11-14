@@ -6,11 +6,10 @@ import { Header } from "./layout/header/header";
   selector: 'app-root',
   imports: [RouterOutlet, Header],
   template: `
-    <app-header />
-    <div class="h-[calc(100%-64px)] overflow">
+    <app-header class="z-10" style="position:sticky"/> <!--sets z-index to keep header above content -->
+    <div class="h-[calc(100%-64px)] overflow-auto">
       <router-outlet />
     </div>
-    
   `,
   styles: [],
 })
