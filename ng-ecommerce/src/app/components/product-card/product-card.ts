@@ -1,14 +1,23 @@
-import { Component, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { Product } from '../../models/product';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton } from '@angular/material/button';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { EcommerceStore } from '../../ecommerce-store';
 
 @Component({
   selector: 'app-product-card',
-  imports: [MatButton,MatIcon],
+  imports: [MatButton, MatIcon, MatIconButton],
   template: `
-    <div class="bg-white cursor-pointer rounded-xl shadow-lg overflow-hidden flex flex-col h-full">
+    <div class="relative bg-white cursor-pointer rounded-xl shadow-lg overflow-hidden flex flex-col h-full">
       <img [src] = "product().imageUrl" clas="w-full h-[300px] object-cover rounded-t-xl"/>
+      <!--wishlist knop -->
+      <button 
+        class="!absolute z-10 top-3 right-3 w-10 h-10 rounded-full !bg-white border-0 shadow-md flex items-center justifiy-center cursor-pointer transition-all duration-200 hover: scale-110 hover:shadow-lg"
+        matIconButton
+        (click)="toggleWishlist(product())"
+      >
+        <mat-icon>favorite</mat-icon>
+      </button>
       <div class="p-5 flex flex-col flex-1">
         <h3 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">{{product().name}}</h3>
         <p class="text-sm text-gray-600 mb-4 flex-1">
@@ -32,7 +41,19 @@ import { MatButton } from '@angular/material/button';
   styles: ``,
 })
 export class ProductCard {
-
   product = input.required<Product>();
+
+  store = inject(EcommerceStore);
+  isInWishlist = computed(() => this.store.wishlistItems().find(p => p.id === this.product().id))
+
+  toggleWishlist(product: Product) {
+    if(this.isInWishlist()){
+      // Remove from wishlist
+    }else{
+      // Add to wishlist
+      this.store.addToWishlist(product);
+    }
+    
+  }
 
 }
