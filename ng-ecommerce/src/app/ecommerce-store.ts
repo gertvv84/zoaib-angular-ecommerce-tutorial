@@ -12,7 +12,7 @@ export type EcommerceState = {
 
 export const EcommerceStore = signalStore(
     {
-        providedIn: 'root' //= 1 instantie geshared over de hele
+        providedIn: 'root' //= één instantie geshared over de hele
     },
     withState({
         products: [
@@ -130,31 +130,47 @@ export const EcommerceStore = signalStore(
         category: 'all',
         wishlistItems: []
     } as EcommerceState), //end withState
-    withComputed(({ category, products }) => ({
+    withComputed(({ category, products, wishlistItems }) => ({
         filteredProducts: computed(() => {
             if (category() === "all") {
                 return products();
             } else {
                 return products().filter((p) => p.category.toLowerCase() === category().toLowerCase())
             }
-        })
+        }),
+        wishlistCount: computed(() => { return wishlistItems().length })
     })), //end withComputed
     withMethods((store, toaster = inject(Toaster)) => ({
-        setCategory: signalMethod<string> ((category: string) => {
+        setCategory: signalMethod<string>((category: string) => {
             patchState(store, { category });
         }),//end setCategory)
-        addToWishlist: 
-            (product: Product) =>{
+        addToWishlist:
+            (product: Product) => {
                 //Produce zorgt voor immutable update (deel van 'immer' lib)
                 const updatedWishlistItems = produce(store.wishlistItems(), (draft) => {
-                    if(draft.find(p => p.id === product.id)){
+                    if (!draft.find((p) => p.id === product.id)) {
                         draft.push(product);
+                    } else {
+                        //draft.splice(draft.findIndex((p) => p.id === product.id),1);
                     }
                 });
-                patchState(store, {wishlistItems: updatedWishlistItems});
-                toaster.success("product added to the wishlist");
-            }
-        
+
+                patchState(store, { wishlistItems: updatedWishlistItems });
+                toaster.success("Product added to the wishlist");
+            }, //end addToWishlist
+        removeFromWishlist:
+            (product: Product) => {
+                patchState(store, { 
+                    // Dit filtert het product uit de lijst
+                    wishlistItems: store.wishlistItems().filter((p) => p.id !== product.id)
+                });
+                toaster.success("Product removed from the wishlist");
+            }, //end removeFromWishlist
+        clearWishlist:
+        () => {
+            patchState(store, {wishlistItems: []});
+            toaster.success("Wishlist cleared");
+        }
     }) //end store
     ) //end withMethods
-)
+) //end store
